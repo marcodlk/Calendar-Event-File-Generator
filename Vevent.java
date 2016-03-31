@@ -1,3 +1,6 @@
+import java.util.Random;
+import java.text.DecimalFormat;
+
 public class Vevent implements Comparable<Vevent>
 {
 	/*
@@ -39,6 +42,155 @@ public class Vevent implements Comparable<Vevent>
 		SUMMARY   = inputSUMMARY;
 		GEO       = inputGEO;
 		CLASS     = inputCLASS;
+	}
+
+	//sets all vevents members variables to random but valid values
+	public void setRandomValues()
+	{
+		int minuidsize = 7;
+		int maxuidsize = 20;
+		int minsumsize = 10;
+		int maxsumsize = 40;
+		int minorgsize = 5;
+		int maxorgsize = 20;
+
+		String [] classOptions = {"PUBLIC", "PRIVATE"};
+		DecimalFormat df = new DecimalFormat("#.##");
+
+		int sizeOfUid       = minuidsize   + (int)(Math.random() * maxuidsize);
+		int sizeOfSummary   = minsumsize   + (int)(Math.random() * maxsumsize);
+		int sizeOfOrganizer = minorgsize   + (int)(Math.random() * maxorgsize);
+		int classChoice     = 0            + (int)(Math.random() * 2         );
+		double latChoice    = -90.0        + (Math.random()      * 90.0      );
+		double lonChoice    = -180.0       + (Math.random()      * 180.0     );
+
+		RandomString myRS1 = new RandomString(sizeOfUid);
+		RandomString myRS2 = new RandomString(sizeOfSummary);
+		RandomString myRS3 = new RandomString(sizeOfOrganizer);
+
+		UID       = myRS1.nextString();
+		SUMMARY   = myRS2.nextString();
+		ORGANIZER = myRS3.nextString();
+		CLASS     = classOptions[classChoice];
+		GEO       = new Geo(df.format(latChoice) + ";" + df.format(lonChoice));
+		DTSTAMP   = getRandomDate();
+		DTSTART   = getRandomDate();
+		DTEND     = getRandomDate();
+
+		while(dateIsGreaterThanDate(DTSTAMP, DTSTART))
+		{
+			DTSTART = getRandomDate();
+		}
+
+		while(dateIsGreaterThanDate(DTSTART, DTEND))
+		{
+			DTEND = getRandomDate();
+		}
+
+		//DEBUG OUTPUT
+		/*
+		System.out.println("UID:       " + UID);
+		System.out.println("SUMMARY:   " + SUMMARY);
+		System.out.println("ORGANIZER: " + ORGANIZER);
+		System.out.println("CLASS:     " + CLASS);
+		System.out.println("GEO:       " + GEO.toString());
+		System.out.println("DTSTAMP:   " + DTSTAMP);
+		System.out.println("DTSTART:   " + DTSTART);
+		System.out.println("DTEND      " + DTEND);
+		*/
+	}
+
+	private String getRandomDate()
+	{
+		DecimalFormat dm = new DecimalFormat("##");
+		String result = "";
+		int minYear = 1990;
+		int maxYear = 2030;
+		int maxMonth = 12;
+		int maxDay = 31;
+		int maxHour = 24;
+		int max =    60;
+		int min = 1;
+		int yearChoice = minYear + (int)(Math.random() * (maxYear - minYear));
+		int monthChoice= min + (int)(Math.random() * (maxMonth - min));
+		int dayChoice  = min + (int)(Math.random() * (maxDay - min));
+		int hourChoice = min + (int)(Math.random() * (maxHour - min));
+		int minChoice  = min + (int)(Math.random() * (max - min));
+		int secChoice  = min + (int)(Math.random() * (max - min));
+
+		result += yearChoice + ""
+			+ String.format("%02d", monthChoice) + ""
+			+ String.format("%02d", dayChoice)   + ""
+			+ "T"
+			+ String.format("%02d", hourChoice) + ""
+			+ String.format("%02d", minChoice)  + ""
+			+ String.format("%02d", secChoice)  + ""
+			+ "Z";
+
+		return result;
+
+	}
+
+	private boolean dateIsGreaterThanDate(String a, String b)
+	{
+		if(!validDateFormat(a) || !validDateFormat(b))
+		{
+			System.err.println("not a valid date format");
+			return false;
+		}
+
+		int AYear    = Integer.parseInt(a.substring(0, 4));
+		int AMonth   = Integer.parseInt(a.substring(4, 6));
+		int ADay     = Integer.parseInt(a.substring(6, 8));
+		int AHours   = Integer.parseInt(a.substring(9, 11));
+		int AMinutes = Integer.parseInt(a.substring(11, 13));
+		int ASeconds = Integer.parseInt(a.substring(13,15));
+
+		int BYear    = Integer.parseInt(b.substring(0, 4));
+		int BMonth   = Integer.parseInt(b.substring(4, 6));
+		int BDay     = Integer.parseInt(b.substring(6, 8));
+		int BHours   = Integer.parseInt(b.substring(9, 11));
+		int BMinutes = Integer.parseInt(b.substring(11, 13));
+		int BSeconds = Integer.parseInt(b.substring(13,15));
+
+		if (AYear > BYear)
+			return true;
+
+		if(BYear > AYear)
+			return false;
+
+		if(AMonth > BMonth)
+			return true;
+
+		if(BMonth > AMonth)
+			return false;
+
+		if(ADay > BDay)
+			return true;
+
+		if(BDay > ADay)
+			return false;
+
+		if(AHours > BHours)
+			return true;
+
+		if(BHours > AHours)
+			return false;
+
+		if(AMinutes > AMinutes)
+			return true;
+
+		if(BMinutes > AMinutes)
+			return false;
+
+		if(ASeconds > BSeconds)
+			return true;
+
+		if(BSeconds > ASeconds)
+			return false;
+
+		System.err.println(a + " is the same as " + b);
+		return false;
 	}
 
 	public String getUID()
@@ -230,12 +382,43 @@ public class Vevent implements Comparable<Vevent>
 		char expectZ = input.charAt(15);
 		expectZ = Character.toLowerCase(expectZ);
 
-		if (expectYear < 0 || expectMonth < 1 || expectMonth > 12 ||
-			expectDay < 1 || expectDay > 31 || expectT != 't' ||
-			expectHours < 0 || expectHours > 24 || expectMinutes < 0 ||
-			expectMinutes > 59 || expectSeconds < 0 || expectSeconds > 59 ||
-			expectZ != 'z') {
+		if (expectYear < 0)
+		{
+			return false;
+		}
 
+		if (expectMonth < 1 || expectMonth > 12)
+		{
+			return false;
+		}
+
+		if (expectDay < 1 || expectDay > 31)
+		{
+			return false;
+		}
+
+		if(expectT != 't')
+		{
+			return false;
+		}
+
+		if (expectHours < 1 || expectHours > 24)
+		{
+			return false;
+		}
+
+		if (expectMinutes < 0 || expectMinutes > 59)
+		{
+			return false;
+		}
+
+		if (expectSeconds < 0 || expectSeconds > 59)
+		{
+			return false;
+		}
+
+	    if (expectZ != 'z')
+		{
 			return false;
 		}
 
@@ -436,42 +619,42 @@ public class Vevent implements Comparable<Vevent>
 
 	public int compareTo(Vevent anotherVevent)
 	{
-		int yearComp = Integer.parseInt(DTSTART.substring(0, 4)) 
+		int yearComp = Integer.parseInt(DTSTART.substring(0, 4))
 						- Integer.parseInt(anotherVevent.getDTSTART().substring(0, 4));
 		if (yearComp != 0)
 		{
 			return yearComp;
 		}
 
-		int monthComp = Integer.parseInt(DTSTART.substring(4, 6)) 
+		int monthComp = Integer.parseInt(DTSTART.substring(4, 6))
 						- Integer.parseInt(anotherVevent.getDTSTART().substring(4, 6));
 		if (monthComp != 0)
 		{
 			return monthComp;
 		}
 
-		int dayComp = Integer.parseInt(DTSTART.substring(6, 8)) 
+		int dayComp = Integer.parseInt(DTSTART.substring(6, 8))
 						- Integer.parseInt(anotherVevent.getDTSTART().substring(6, 8));
 		if (dayComp != 0)
 		{
 			return dayComp;
 		}
 
-		int hoursComp = Integer.parseInt(DTSTART.substring(9, 11)) 
+		int hoursComp = Integer.parseInt(DTSTART.substring(9, 11))
 						- Integer.parseInt(anotherVevent.getDTSTART().substring(9, 11));
 		if (hoursComp != 0)
 		{
 			return hoursComp;
 		}
 
-		int minsComp = Integer.parseInt(DTSTART.substring(11, 13)) 
+		int minsComp = Integer.parseInt(DTSTART.substring(11, 13))
 						- Integer.parseInt(anotherVevent.getDTSTART().substring(11, 13));
 		if (minsComp != 0)
 		{
 			return minsComp;
 		}
 
-		int secsComp = Integer.parseInt(DTSTART.substring(13, 15)) 
+		int secsComp = Integer.parseInt(DTSTART.substring(13, 15))
 						- Integer.parseInt(anotherVevent.getDTSTART().substring(13, 15));
 		if (secsComp != 0)
 		{

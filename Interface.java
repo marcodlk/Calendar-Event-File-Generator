@@ -57,13 +57,19 @@ public class Interface
        		//adds a sample event - currently just for speed of testing/debugging
        		else if(userInput.equals("addsample"))
        		{
-       			calendar.addEvent(new Vevent("htms3l9k1rnnadhbfg1oqc46d8@google.com", "20160222T030130Z", "", "20150322T173000Z", "20150322T180000Z", "default event", new Geo("37.386013;-122.082932"), "PRIVATE"));
+				//creates an event then fills it with random valid values
+				Vevent sampleEvent = new Vevent();
+				sampleEvent.setRandomValues();
+
+				//add sample event to the calendar
+				calendar.addEvent(sampleEvent);
        		}
        		//print all events currently in the calendar
        		else if(userInput.equals("printallevents"))
        		{
        			System.out.println();
        			System.out.println("===================================");
+				calendar.sortCalendar();
        			calendar.printAllEvents();
        			System.out.println("===================================");
        			System.out.println();
@@ -73,6 +79,7 @@ public class Interface
 			{
        			System.out.println();
        			System.out.println("===================================");
+				calendar.sortCalendar();
        			calendar.printGreatCircleDistance();
        			System.out.println("===================================");
        			System.out.println();
@@ -257,11 +264,12 @@ public class Interface
 	{
 		System.out.println();
 		System.out.println("=============COMMANDS==============");
-		System.out.println("commands       - prints all known commands");
-		System.out.println("exit           - exits the program with exporting");
-		System.out.println("add            - add an event to current .ics file");
-		System.out.println("printallevents - prints every event currently in the working calendar");
-		System.out.println("printgcd	   - prints the great circle distance between the events");
+		System.out.println("commands       - print all commands");
+		System.out.println("exit           - export then quit");
+		System.out.println("add            - add a custom event");
+		System.out.println("printallevents - print every event");
+		System.out.println("printgcd       - print great circle distance");
+		System.out.println("addsample      - add a random event");
 		System.out.println("===================================");
 		System.out.println();
 	}

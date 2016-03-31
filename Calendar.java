@@ -199,7 +199,6 @@ public class Calendar
 
 	public void printAllEvents()
 	{
-		sortCalendar();
 		Iterator veventsItr = allVevents.iterator();
 		System.out.print("-----------------------------------\n");
 		while(veventsItr.hasNext())
@@ -224,7 +223,7 @@ public class Calendar
 		}
 		catch(NullPointerException e)
 		{
-			System.out.println(e);
+			System.out.println("you are trying to input an event with null values!");
 		}
 	}
 
