@@ -161,6 +161,36 @@ public class Calendar
 						System.err.println("Invalid GEO found at line " + lineCount + " in " + inputIcsFile);
 					}
 				}
+				//if CLASS detected
+				else if((temp = strLine.substring(0, 6)).equals("CLASS:"))
+				{
+					String temp2 = strLine.substring(6, strLine.length());
+
+					//if valid according to validation method in vevent
+					if(vevent.validCLASS(temp2))
+					{
+						vevent.setCLASS(temp2);
+					}
+					else
+					{
+						System.err.println("Invalid CLASS found at line " + lineCount + " in " + inputIcsFile);
+					}
+				}
+				//if COMMENT detected
+				else if((temp = strLine.substring(0, 8)).equals("COMMENT:"))
+				{
+					String temp2 = strLine.substring(8, strLine.length());
+
+					//if valid according to validation method in vevent
+					if(vevent.validCOMMENT(temp2))
+					{
+						vevent.setCOMMENT(temp2);
+					}
+					else
+					{
+						System.err.println("Invalid COMMENT found at line " + lineCount + " in " + inputIcsFile);
+					}
+				}
 			}
 			in.close();
 		}
@@ -228,7 +258,6 @@ public class Calendar
 		}
 	}
 
-	//TODO
 	//sorts the events in the calendar by the start date
 	public void sortCalendar()
 	{
@@ -247,21 +276,61 @@ public class Calendar
 
 		Iterator<Vevent> veventsItr = allVevents.iterator();
 		Vevent iter = veventsItr.next();
+		Vevent iterPrev = iter;
+		DecimalFormat df = new DecimalFormat("#,###.##");
+
 		System.out.print("-----------------------------------\n");
 		System.out.print("------GREAT-CIRCLE-DISTANCE--------\n\n");
+
+        Geo currGEO = iter.getGEO();
+		String currSum = iter.getSUMMARY();
+
 		while(veventsItr.hasNext())
 		{
-			Geo currGEO = iter.getGEO();
-			String currSum = iter.getSUMMARY();
-			DecimalFormat df = new DecimalFormat("#,###.##");
+			//move the first iterator forward
 			iter = veventsItr.next();
-			double gcd = greatCircleDistanceBetween(currGEO, iter.getGEO());
-			System.out.println(currSum + " and " + iter.getSUMMARY() + ":\n" + df.format(gcd) + "m (" + df.format(1.609344 * gcd) + "km)\n");
+
+			//if the geo of the current iteration is not empty
+			if(iter.getGEO() != null)
+			{
+				//calculate GCD and store it in comment section of first event
+				double gcd = greatCircleDistanceBetween(currGEO, iter.getGEO());
+				iterPrev.setCOMMENT("The Great Circle Distance to the next event(" + shortenString(iter.getSUMMARY()) + "...) is " + df.format(gcd)+ " miles (" + df.format(1.609344 * gcd) + "km)");
+
+				//print gcd for first event to the next event
+				System.out.println(currSum + " to " + iter.getSUMMARY() + " is " + df.format(gcd) + " miles (" + df.format(1.609344 * gcd) + "km)\n");
+
+		    	//updates the held values
+				currGEO = iter.getGEO();
+				currSum = iter.getSUMMARY();
+				iterPrev = iter;
+			}
+			else
+			{
+				System.out.println(iter.getSUMMARY() + " does not have a GEO, GCD will not take this event into consideration....");
+			}
 			System.out.println("-----------------------------------\n");
 		}
 	}
 
-	//calculates the great circle distance between two Geo locations in statute miles
+	//returns the first x characters of a string if the string is considered to be too long
+	private String shortenString(String input)
+	{
+		String result = "";
+		int RETURNLENGTH = 7;
+		if (input.length() <= RETURNLENGTH)
+		{
+			return input;
+		}
+
+		for (int i = 0; i < RETURNLENGTH; i++)
+		{
+			result += input.charAt(i);
+		}
+		return result;
+	}
+
+	//calculates the great circle distance between two Geo locations in statue miles
 	public double greatCircleDistanceBetween(Geo src, Geo dest)
 	{
 		double earthRadius = 3958.75; // miles (or 6371.0 kilometers)
@@ -276,5 +345,4 @@ public class Calendar
 
 		return dist;
 	}
-
 }
